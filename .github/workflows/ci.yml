@@ -1,15 +1,13 @@
-name: Go CI
-
+name: Go CI/CD Pipeline
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main, develop]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -17,23 +15,17 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: 1.21
 
       - name: Install dependencies
         run: go mod tidy
 
       - name: Run tests
-        run: go test ./...
+        run: go test ./... -v
 
-deploy:
-  needs: build-and-test
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v3
-    - name: Deploy to Heroku
-      uses: akhileshns/heroku-deploy@v3.12.12
-      with:
-        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-        heroku_app_name: "my-go-app"
-        heroku_email: "you@example.com"
+      - name: Build project
+        run: go build -v ./...
+
+      - name: Run lint
+        run: go vet ./...
 
